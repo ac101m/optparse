@@ -10,7 +10,7 @@ INC_DIRS ?= include
 CXX = g++
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 BASE_FLAGS ?= -MMD -MP -m64 -std=c++11
-COMPILE_FLAGS ?= $(INC_FLAGS) $(BASE_FLAGS)
+COMPILE_FLAGS ?= $(INC_FLAGS) $(BASE_FLAGS) -g
 
 # Source and object enumerations
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp)

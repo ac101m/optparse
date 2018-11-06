@@ -8,64 +8,88 @@
 using namespace std;
 
 
+// Option type enum
+typedef enum {
+  ARG_TYPE_STRING,
+  ARG_TYPE_INT,
+  ARG_TYPE_FLOAT,
+  ARG_TYPE_BOOL,
+  ARG_TYPE_VOID
+} ArgType;
+
+
+// Class to facilitate simple argument conversion
+class Argument {
+  private:
+
+    // Base storage in a string
+    string str;
+
+  public:
+
+    // Constructors
+    Argument(string str);
+    Argument(int i);
+    Argument(bool b);
+    Argument(double d);
+
+    // Overloaded conversions
+    string GetString();
+    int GetInt();
+    bool GetBool();
+    double GetDouble();
+};
+
+
 // Class represents a possible command line parameter in the code
 class Option {
   private:
 
     // Initial data
-    bool required;
+    ArgType type;
     char shortIdent;
     string longIdent;
-    string usage;
+    string desc;
 
     // Data retrieved from command line parameters
-    vector<string> args;
+    vector<Argument> args;
     bool specified;
 
   public:
 
-    // Constructors
-    Option(string longIdent, char shortIdent, string usage, vector<string> def);
+    // Constructors and initialiser
+    Option(string longIdent, char shortIdent, ArgType type, string usage);
+    Option(string longIdent, char shortIdent, ArgType type, string usage, vector<string> def);
+    void Init(string longIdent, char shortIdent, ArgType type, string desc);
+
+    // Compare long and short identifiers
     bool OptMatches(char opt);
     bool OptMatches(string opt);
 
     // Parsing options
-    void SetArguments(vector<string> args);
-    void SetSpecified(void);
     void Parse(vector<string> argv);
+    void SetArgs(vector<string> args);
+    void SetSpecified(void);
 
-    // Get arguments in various forms
-    vector<string> GetArguments(void);
+    // Get arguments in string form
+    vector<Argument> GetArguments(void);
+    void AssertArgRequestValid(ArgType requestedType);
     bool Specified(void) {return this->specified;}
 
-    // Templated method for getting converted arguments
-    template<typename T>
-    vector<T> Get(void) {
+    // Vector conversions
+    operator vector<string>();
+    operator vector<int>();
+    operator vector<bool>();
+    operator vector<double>();
 
-      // Check that the command line option actually exists
-      if(this->args.size() == 0) {
-      printf("Error, '%s' expects at least 1 argument.\n", longIdent.c_str());
-        exit(1);
-      }
+    // Single conversions
+    operator string();
+    operator int();
+    operator bool();
+    operator double();
 
-      // Vector of argument type
-      vector<T> convertedArgs;
-
-      // Convert all the arguments
-      for(unsigned i = 0; i < this->args.size(); i++) {
-      stringstream ss(this->args[i]);
-      T convertedValue;
-        if(ss >> convertedValue) {
-          convertedArgs.push_back(convertedValue);
-        } else {
-          printf("Error,'%s' argument '%s' invalid format.\n", longIdent.c_str(), this->args[i].c_str());
-          exit(1);
-        }
-      }
-
-    // Return the compiled vector of converted arguments
-    return convertedArgs;
-    }
+    // Identifying string
+    string IDStr(void);
 };
 
 
@@ -73,35 +97,23 @@ class Option {
 class OptionParser {
   private:
 
-    // Raw arguments
+    // Raw arguments, from command line
     vector<string> argv;
 
-    // Options classes
+    // Options class and flags
     vector<Option> options;
-
-  private:
-
-    Option GetOption(string longIdent);
-    Option GetOption(char shortIdent);
+    bool optionsFinaized;
 
   public:
 
     OptionParser(int argc, char **argv);
-
-    // Option add routines
-    void AddOption(string longIdent, char shortIdent, string usage, vector<string> def);
-    void AddOption(string longIdent, char shortIdent, string usage, string def);
-    void AddOption(string longIdent, char shortIdent, string usage);
-    void AddOption(Option opt);
+    void Add(Option opt);
 
     // Is a given option specified
     bool Specified(string longIdent);
 
-    // Templated function for getting converted arguments
-    template<typename T>
-    vector<T> Get(string longIdent) {
-      return this->GetOption(longIdent).Get<T>();
-    }
+    // Get a specified option
+    Option Get(string longIdent);
 };
 
 

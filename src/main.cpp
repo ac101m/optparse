@@ -2,6 +2,7 @@
 #include "unistd.h"
 #include <iostream>
 
+
 #include "options.hpp"
 
 
@@ -12,19 +13,25 @@ int main(int argc, char **argv) {
   OptionParser options(argc, argv);
 
   // Test argument 1, just for setting the print message
-  options.AddOption("message", 'm',                                   // Type and identifiers
-                    "Set the message to display to the terminal.",    // Option help message
-                    "Hello world");                                   // Default argument(s)
+  options.Add(Option(
+    "message", 'm', ARG_TYPE_STRING,
+    "Sets the message to display to the terminal.",
+    {"Hello world"}));
 
   // Test argument 2, prints the message "cake"
-  options.AddOption("cake", 'c',                                      // Identifiers
-                    "Prints the message \"cake\" to the terminal.");  // Help message
+  options.Add(Option(
+    "count", 'n', ARG_TYPE_INT,
+    "Sets the number of times the argument is displayed.",
+    {"1"}));
 
-  // Print out the message passed in as a parameter
-  printf("%s\n", options.Get<string>("message")[0].c_str());
+  // Get and convert options
+  int count = options.Get("count");
+  string message = options.Get("message");
 
-  // Test the cake option
-  if(options.Specified("cake")) printf("cake!\n");
+  // Print the message n times
+  for(int i = 0; i < count; i++) {
+    cout << message << "\n";
+  }
 
   // El fin
   return 0;
