@@ -71,6 +71,7 @@ vector<string> GetOptArgs(vector<string> argv, unsigned optIndex) {
   return optArgs;
 }
 
+
 //========[OPTION ARGUMENT SUBCLASS]=============================================================//
 
 // String constructor
@@ -111,8 +112,7 @@ int Argument::GetInt(void) {
   if(ss >> i) {
     return i;
   } else {
-    cout << "ERROR, cannot convert '" << this->str << "' to integer.\n";
-    exit(1);
+    throw ArgumentConversionException();
   }
 }
 
@@ -123,8 +123,7 @@ bool Argument::GetBool(void) {
   if(ss >> boolalpha >> b) {
     return b;
   } else {
-    cout << "ERROR, cannot convert '" << this->str << "' to boolean.\n";
-    exit(1);
+    throw ArgumentConversionException();
   }
 }
 
@@ -135,8 +134,7 @@ double Argument::GetDouble(void) {
   if(ss >> d) {
     return d;
   } else {
-    cout << "ERROR, cannot convert '" << this->str << "' to double.\n";
-    exit(1);
+    throw ArgumentConversionException();
   }
 }
 
@@ -180,7 +178,7 @@ void Option::SetSpecified(void) {
 
   // Do not allow repeat specification of an option
   if(this->specified) {
-    cout << "ERROR, option " << this->IDStr() << "already specified.\n";
+    cout << "ERROR, option " << this->IDStr() << " already specified.\n";
     exit(1);
   } else {
     this->specified = true;
@@ -236,7 +234,7 @@ void Option::Parse(vector<string> argv) {
 vector<Argument> Option::GetArguments(void) {
 
   if(this->args.size() == 0) {
-    printf("Error, option '%s' has no arguments.\n", this->longIdent.c_str());
+    cout << "ERROR, option " << this->IDStr() << " has no arguments.\n";
     exit(1);
   }
 
@@ -256,25 +254,20 @@ void Option::AssertArgRequestValid(ArgType requestedType) {
   // If it was specified, then print a message (user error)
   } else {
     if(this->args.size() == 0) {
-      cout << "ERROR option " << this->IDStr();
-      cout << " expects at least one argument\n";
+      cout << "ERROR, option " << this->IDStr();
+      cout << " expects at least one argument.\n";
       exit(1);
     }
   }
 }
 
-// String array conversion
+// String list
 Option::operator vector<string>() {
-
-  // Check that the argument request is valid
   AssertArgRequestValid(ARG_TYPE_STRING);
-
-  // Convert all arguments
   vector<string> convertedArgs;
   for(unsigned i = 0; i < this->args.size(); i++) {
     convertedArgs.push_back(this->args[i].GetString());
   }
-
   return convertedArgs;
 }
 
@@ -284,31 +277,94 @@ Option::operator string() {
   return this->args[0].GetString();
 }
 
-// Int array conversion
+// Integer list
 Option::operator vector<int>() {
-
-  // Check that the argument request is valid
   AssertArgRequestValid(ARG_TYPE_INT);
-
-  // Convert all arguments
   vector<int> convertedArgs;
   for(unsigned i = 0; i < this->args.size(); i++) {
-    convertedArgs.push_back(this->args[i].GetInt());
+    try {
+      convertedArgs.push_back(this->args[i].GetInt());
+    } catch(ArgumentConversionException& e) {
+      cout << "ERROR, option " << this->IDStr();
+      cout << " expects integer arguments.\n";
+      exit(1);
+    }
   }
-
   return convertedArgs;
 }
 
-// Single string
+// Single integer
 Option::operator int() {
   AssertArgRequestValid(ARG_TYPE_INT);
-  return this->args[0].GetInt();
+  try {
+    return this->args[0].GetInt();
+  } catch(ArgumentConversionException& e) {
+    cout << "ERROR, option " << this->IDStr();
+    cout << " Expects integer arguments.\n";
+    exit(1);
+  }
+}
+
+// Boolean list
+Option::operator vector<bool>() {
+  AssertArgRequestValid(ARG_TYPE_BOOL);
+  vector<bool> convertedArgs;
+  for(unsigned i = 0; i < this->args.size(); i++) {
+    try {
+      convertedArgs.push_back(this->args[i].GetBool());
+    } catch(ArgumentConversionException& e) {
+      cout << "ERROR, option " << this->IDStr();
+      cout << " Expects boolean arguments ('true' or 'false').\n";
+      exit(1);
+    }
+  }
+  return convertedArgs;
+}
+
+// Single boolean
+Option::operator bool() {
+  AssertArgRequestValid(ARG_TYPE_BOOL);
+  try {
+    return this->args[0].GetBool();
+  } catch(ArgumentConversionException& e) {
+    cout << "ERROR, option " << this->IDStr();
+    cout << " Expects boolean arguments ('true' or 'false').\n";
+    exit(1);
+  }
+}
+
+// List of floating point numbers
+Option::operator vector<double>() {
+  AssertArgRequestValid(ARG_TYPE_BOOL);
+  vector<double> convertedArgs;
+  for(unsigned i = 0; i < this->args.size(); i++) {
+    try {
+      convertedArgs.push_back(this->args[i].GetDouble());
+    } catch(ArgumentConversionException& e) {
+      cout << "ERROR, option " << this->IDStr();
+      cout << " Expects floating point number.\n";
+      exit(1);
+    }
+  }
+  return convertedArgs;
+}
+
+// Single floating point numbers
+Option::operator double() {
+  AssertArgRequestValid(ARG_TYPE_FLOAT);
+  try {
+    return this->args[0].GetBool();
+  } catch(ArgumentConversionException& e) {
+    cout << "ERROR, option " << this->IDStr();
+    cout << " Expects floating point number.\n";
+    exit(1);
+  }
 }
 
 // Returns a string representative of the option
 string Option::IDStr(void) {
   stringstream ss;
-  ss << "[--" << this->longIdent << ", -" << this->shortIdent << "]\n";
+  ss << "[--" << this->longIdent << ", -" << this->shortIdent << "]";
   return ss.str();
 }
 

@@ -18,6 +18,14 @@ typedef enum {
 } ArgType;
 
 
+// Conversion error exception
+class ArgumentConversionException : exception {
+  const char * what() const throw() {
+    return "Conversion exception.";
+  }
+};
+
+
 // Class to facilitate simple argument conversion
 class Argument {
   private:
