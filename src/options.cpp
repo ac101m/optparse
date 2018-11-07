@@ -335,7 +335,7 @@ Option::operator bool() {
 
 // List of floating point numbers
 Option::operator vector<double>() {
-  AssertArgRequestValid(ARG_TYPE_BOOL);
+  AssertArgRequestValid(ARG_TYPE_FLOAT);
   vector<double> convertedArgs;
   for(unsigned i = 0; i < this->args.size(); i++) {
     try {
@@ -353,7 +353,7 @@ Option::operator vector<double>() {
 Option::operator double() {
   AssertArgRequestValid(ARG_TYPE_FLOAT);
   try {
-    return this->args[0].GetBool();
+    return this->args[0].GetDouble();
   } catch(ArgumentConversionException& e) {
     cout << "ERROR, option " << this->IDStr();
     cout << " Expects floating point number.\n";

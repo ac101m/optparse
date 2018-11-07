@@ -7,7 +7,7 @@
 
 
 // Build option parser
-OptionParser buildOptionParser(int argc, char **argv) {
+OptionParser BuildOptionParser(int argc, char **argv) {
 
   // Add test options to the parser
   OptionParser options(argc, argv);
@@ -44,14 +44,18 @@ OptionParser buildOptionParser(int argc, char **argv) {
   return options;
 }
 
+
 // Test the options parser
 int main(int argc, char **argv) {
+
+  // Option parser
+  OptionParser options = BuildOptionParser(argc, argv);
 
   // Get and convert options
   int count = options.Get("count");
   string message = options.Get("message");
   bool thereIsCake = options.Get("cake");
-  double pi = options.Get("Pi");
+  double pi = options.Get("pi");
 
   // Print the message n times
   for(int i = 0; i < count; i++)
@@ -62,7 +66,7 @@ int main(int argc, char **argv) {
     cout << "cake\n";
 
   // Print PI from the command line option
-  cout << options.get(pi) << "\n";
+  cout << "Pi is: " << pi << "\n";
 
   // El fin
   return 0;
