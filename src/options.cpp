@@ -177,12 +177,9 @@ void Option::Specify(vector<string> args) {
   } else {
     this->args.clear();
     this->specified = true;
-<<<<<<< HEAD
     for(unsigned i = 0; i < args.size(); i++) {
       this->args.push_back(Argument(args[i]));
     }
-=======
->>>>>>> a15686bdc61b82b5b13a8faab8ee760fb9c4eb66
   }
 }
 
