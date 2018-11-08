@@ -37,7 +37,7 @@ OptionParser BuildOptionParser(int argc, char **argv) {
   options.Add(Option(
     "pi", 'p', ARG_TYPE_FLOAT,
     "A floating point number to print to the terminal.",
-    {"3.14"}
+    {"3.14159"}
   ));
 
   // Return option parser
@@ -58,12 +58,10 @@ int main(int argc, char **argv) {
   double pi = options.Get("pi");
 
   // Print the message n times
-  for(int i = 0; i < count; i++)
-    cout << message << "\n";
+  for(int i = 0; i < count; i++) cout << message << "\n";
 
   // Print the word cake if apropriate
-  if(thereIsCake)
-    cout << "cake\n";
+  if(thereIsCake) cout << "cake\n";
 
   // Print PI from the command line option
   cout << "Pi is: " << pi << "\n";

@@ -30,7 +30,7 @@ release: $(OBJS)
 # Clean, be careful with this
 .PHONY: clean
 clean:
-	$(RM) -r $(OBJ_DIR)
+	@$(RM) -rv $(OBJ_DIR)
 
 # Include dependencies
 -include $(DEPS)

@@ -30,7 +30,7 @@ class ArgumentConversionException : exception {
 class Argument {
   private:
 
-    // Base storage in a string
+    // Base storage is a string
     string str;
 
   public:
@@ -66,8 +66,10 @@ class Option {
   public:
 
     // Constructors and initialiser
-    Option(string longIdent, char shortIdent, ArgType type, string usage);
-    Option(string longIdent, char shortIdent, ArgType type, string usage, vector<string> def);
+    Option(string longIdent, char shortIdent, ArgType type, string desc);
+    Option(string longIdent, char shortIdent, ArgType type, string desc, vector<string> def);
+
+    // Basic initialiser, for shared code
     void Init(string longIdent, char shortIdent, ArgType type, string desc);
 
     // Compare long and short identifiers
@@ -75,12 +77,9 @@ class Option {
     bool OptMatches(string opt);
 
     // Parsing options
-    void Parse(vector<string> argv);
-    void SetArgs(vector<string> args);
-    void SetSpecified(void);
+    void Specify(vector<string> args);
 
     // Get arguments in string form
-    vector<Argument> GetArguments(void);
     void AssertArgRequestValid(ArgType requestedType);
     bool Specified(void) {return this->specified;}
 
@@ -110,12 +109,22 @@ class OptionParser {
 
     // Options class and flags
     vector<Option> options;
-    bool optionsFinaized;
+    bool finalised;
+
+  private:
+
+    Option& FindOption(string longIdent);
+    Option& FindOption(char shortIdent);
 
   public:
 
     OptionParser(int argc, char **argv);
     void Add(Option opt);
+
+    // Parsing routines
+    void ParseLongOption(unsigned optIndex);
+    void ParseShortOptionBlock(unsigned optIndex);
+    void Parse(void);
 
     // Is a given option specified
     bool Specified(string longIdent);

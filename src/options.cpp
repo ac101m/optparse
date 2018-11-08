@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 
+
 //========[GENERAL LOCAL UTILITY FUNCTIONS]======================================================//
 
 // Counts number of leading dashes in a string. Duh.
@@ -13,7 +14,7 @@ unsigned CountLeadingDashes(string& opt) {
 
   // Count leading dashes
   unsigned leadingDashes = 0;
-    for(unsigned i = 0; i < opt.size(); i++) {
+  for(unsigned i = 0; i < opt.size(); i++) {
     if(opt[i] == '-') {
       leadingDashes++;
     } else {
@@ -25,23 +26,6 @@ unsigned CountLeadingDashes(string& opt) {
   return leadingDashes;
 }
 
-// Returns true if opt is a valid long option
-bool ValidLongOption(string& opt) {
-  if(CountLeadingDashes(opt) == 2) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// Returns true if opt is a valid short option
-bool ValidShortOption(string& opt) {
-  if(CountLeadingDashes(opt) == 1) {
-    return true;
-  } else {
-    return false;
-  }
-}
 
 // Strip leading dashes from a string
 string StripLeadingDashes(string& opt) {
@@ -54,22 +38,6 @@ string StripLeadingDashes(string& opt) {
   return r;
 }
 
-// Get arguments following a specified option
-vector<string> GetOptArgs(vector<string> argv, unsigned optIndex) {
-  vector<string> optArgs;
-
-  // Add option arguments to string
-  for(unsigned i = optIndex + 1; i < argv.size(); i++) {
-    if(argv[i][0] != '-') {
-      optArgs.push_back(argv[i]);
-    } else {
-      break;
-    }
-  }
-
-  // Return the vector
-  return optArgs;
-}
 
 
 //========[OPTION ARGUMENT SUBCLASS]=============================================================//
@@ -79,12 +47,14 @@ Argument::Argument(string str) {
   this->str = str;
 }
 
+
 // Integer constructor
 Argument::Argument(int i) {
   stringstream ss;
   ss << i;
   this->str = ss.str();
 }
+
 
 // Boolean constructor
 Argument::Argument(bool b) {
@@ -93,6 +63,7 @@ Argument::Argument(bool b) {
   this->str = ss.str();
 }
 
+
 // Floating point constructor
 Argument::Argument(double d) {
   stringstream ss;
@@ -100,10 +71,12 @@ Argument::Argument(double d) {
   this->str = ss.str();
 }
 
+
 // String conversion overload
 string Argument::GetString(void) {
   return this->str;
 }
+
 
 // Integer conversion overload
 int Argument::GetInt(void) {
@@ -116,6 +89,7 @@ int Argument::GetInt(void) {
   }
 }
 
+
 // Boolean conversion overload
 bool Argument::GetBool(void) {
   stringstream ss(this->str);
@@ -126,6 +100,7 @@ bool Argument::GetBool(void) {
     throw ArgumentConversionException();
   }
 }
+
 
 // Boolean conversion overload
 double Argument::GetDouble(void) {
@@ -139,18 +114,26 @@ double Argument::GetDouble(void) {
 }
 
 
+
 //========[OPTION SUBCLASS]======================================================================//
+
 
 // Constructor without default arguments
 Option::Option(string longIdent, char shortIdent, ArgType type, string desc) {
   this->Init(longIdent, shortIdent, type, desc);
 }
 
-// Constructor with string default arguments
+
+// Constructor for strings
 Option::Option(string longIdent, char shortIdent, ArgType type, string desc, vector<string> def) {
   this->Init(longIdent, shortIdent, type, desc);
-  this->SetArgs(def);
+
+  // Set default arguments
+  for(unsigned i = 0; i < def.size(); i++) {
+    this->args.push_back(Argument(def[i]));
+  }
 }
+
 
 // Init routine, used for common constructor code
 void Option::Init(string longIdent, char shortIdent, ArgType type, string desc) {
@@ -165,27 +148,8 @@ void Option::Init(string longIdent, char shortIdent, ArgType type, string desc) 
   this->specified = false;
 }
 
-// Set arguments, overrides default arguments
-void Option::SetArgs(vector<string> args) {
-  this->args.clear();
-  for(unsigned i = 0; i < args.size(); i++) {
-    this->args.push_back(Argument(args[i]));
-  }
-}
 
-// Indicate that the options has been specified
-void Option::SetSpecified(void) {
-
-  // Do not allow repeat specification of an option
-  if(this->specified) {
-    cout << "ERROR, option " << this->IDStr() << " already specified.\n";
-    exit(1);
-  } else {
-    this->specified = true;
-  }
-}
-
-// Short option match check
+// Short option match check, ignores leading dashes
 bool Option::OptMatches(char opt) {
   if(opt == this->shortIdent) {
     return true;
@@ -194,7 +158,8 @@ bool Option::OptMatches(char opt) {
   }
 }
 
-// Long option match check
+
+// Long option match check, ignores leading dashes
 bool Option::OptMatches(string opt) {
   if(StripLeadingDashes(opt) == this->longIdent) {
     return true;
@@ -203,43 +168,24 @@ bool Option::OptMatches(string opt) {
   }
 }
 
-// Parse from list of all command line arguments
-void Option::Parse(vector<string> argv) {
 
-  // Iterate until an option is found
-  for(unsigned i = 0; i < argv.size(); i++) {
-
-    // Long option
-    if(CountLeadingDashes(argv[i]) == 2) {
-      if(OptMatches(argv[i])) {
-        this->SetSpecified();
-        this->SetArgs(GetOptArgs(argv, i));
-      }
-
-    // Group of one or more short options
-    } else if(CountLeadingDashes(argv[i]) == 1) {
-      for(unsigned j = 1; j < argv[i].size(); j++) {
-        if(this->OptMatches(argv[i][j])) {
-          this->SetSpecified();
-          if(j == argv[i].size() - 1) {
-            this->SetArgs(GetOptArgs(argv, i));
-          }
-        }
-      }
-    }
-  }
-}
-
-// Get arguments for a command line option
-vector<Argument> Option::GetArguments(void) {
-
-  if(this->args.size() == 0) {
-    cout << "ERROR, option " << this->IDStr() << " has no arguments.\n";
+// Append an argument, overriding default arguments
+void Option::Specify(vector<string> args) {
+  if(this->specified) {
+    cout << "ERROR, option " << this->IDStr() << " multiply specified.\n";
     exit(1);
+  } else {
+    this->args.clear();
+    this->specified = true;
+    cout << this->IDStr();
+    for(unsigned i = 0; i < args.size(); i++) {
+      cout << "[" << args[i] << "]";
+      this->args.push_back(Argument(args[i]));
+    }
+    cout << "\n";
   }
-
-  return this->args;
 }
+
 
 // Assert that a conversion is valid
 void Option::AssertArgRequestValid(ArgType requestedType) {
@@ -250,8 +196,6 @@ void Option::AssertArgRequestValid(ArgType requestedType) {
   // If not specified (default arguments) then assert (developer error)
   if(!this->specified) {
     assert(this->args.size() != 0);
-
-  // If it was specified, then print a message (user error)
   } else {
     if(this->args.size() == 0) {
       cout << "ERROR, option " << this->IDStr();
@@ -260,6 +204,7 @@ void Option::AssertArgRequestValid(ArgType requestedType) {
     }
   }
 }
+
 
 // String list
 Option::operator vector<string>() {
@@ -271,11 +216,13 @@ Option::operator vector<string>() {
   return convertedArgs;
 }
 
+
 // Single string
 Option::operator string() {
   AssertArgRequestValid(ARG_TYPE_STRING);
   return this->args[0].GetString();
 }
+
 
 // Integer list
 Option::operator vector<int>() {
@@ -293,6 +240,7 @@ Option::operator vector<int>() {
   return convertedArgs;
 }
 
+
 // Single integer
 Option::operator int() {
   AssertArgRequestValid(ARG_TYPE_INT);
@@ -304,6 +252,7 @@ Option::operator int() {
     exit(1);
   }
 }
+
 
 // Boolean list
 Option::operator vector<bool>() {
@@ -321,6 +270,7 @@ Option::operator vector<bool>() {
   return convertedArgs;
 }
 
+
 // Single boolean
 Option::operator bool() {
   AssertArgRequestValid(ARG_TYPE_BOOL);
@@ -332,6 +282,7 @@ Option::operator bool() {
     exit(1);
   }
 }
+
 
 // List of floating point numbers
 Option::operator vector<double>() {
@@ -349,6 +300,7 @@ Option::operator vector<double>() {
   return convertedArgs;
 }
 
+
 // Single floating point numbers
 Option::operator double() {
   AssertArgRequestValid(ARG_TYPE_FLOAT);
@@ -361,6 +313,7 @@ Option::operator double() {
   }
 }
 
+
 // Returns a string representative of the option
 string Option::IDStr(void) {
   stringstream ss;
@@ -369,7 +322,9 @@ string Option::IDStr(void) {
 }
 
 
+
 //========[OPTION PARSER SUBCLASS]===============================================================//
+
 
 // Constructor clear options (and add a help option)
 OptionParser::OptionParser(int argc, char **argv) {
@@ -379,49 +334,158 @@ OptionParser::OptionParser(int argc, char **argv) {
     this->argv.push_back(string(argv[i]));
   }
 
+  // Indicate that the option is not finalised
+  this->finalised = false;
+
   // Clear any present options
   this->options.clear();
 
-  // Add the help option
+  // Add the help option (presently does nothing)
   this->Add(Option(
     "help", 'h', ARG_TYPE_STRING,
-    "Displays help message."));
+    "Displays help message.",
+    {"all"}
+  ));
 }
+
 
 // Add an option
 void OptionParser::Add(Option opt) {
-  opt.Parse(this->argv);
+  assert(this->finalised != true);
   this->options.push_back(opt);
 }
 
+
+// Find an option with a given long ident
+Option& OptionParser::FindOption(string longIdent) {
+
+  // Collect all options that match the given long identifier
+  vector<unsigned> matchIndices;
+  for(unsigned i = 0; i < this->options.size(); i++) {
+    if(this->options[i].OptMatches(longIdent)) {
+      matchIndices.push_back(i);
+    }
+  }
+
+  // Multiple definition of an option is programmer error
+  assert(matchIndices.size() <= 1 /* short ident */);
+
+  // Is the option found or not
+  if(matchIndices.size() == 0) {
+    cout << "ERROR, option '" << longIdent << "' not recognised.\n";
+    exit(1);
+  } else {
+    return this->options[matchIndices[0]];
+  }
+}
+
+
+// Find an option with a given short ident
+Option& OptionParser::FindOption(char shortIdent) {
+
+  // Collect all options that match the given long identifier
+  vector<unsigned> matchIndices;
+  for(unsigned i = 0; i < this->options.size(); i++) {
+    if(this->options[i].OptMatches(shortIdent)) {
+      matchIndices.push_back(i);
+    }
+  }
+
+  // Multiple definition of an option is programmer error
+  assert(matchIndices.size() <= 1 /* short ident */);
+
+  // Is the option found or not
+  if(matchIndices.size() == 0) {
+    cout << "ERROR, option '" << shortIdent << "' not recognised.\n";
+    exit(1);
+  } else {
+    return this->options[matchIndices[0]];
+  }
+}
+
+
+// Parse a long option
+void OptionParser::ParseLongOption(unsigned optIndex) {
+  string optID = this->argv[optIndex];
+  assert(CountLeadingDashes(optID) == 2);
+
+  // Extract option arguments
+  vector<string> optArgs;
+  for(unsigned i = optIndex; i < this->argv.size(); i++) {
+    if(i != optIndex) {
+      if(CountLeadingDashes(this->argv[i])) break;
+      else optArgs.push_back(this->argv[i]);
+    }
+  }
+
+  // Get the matching option
+  FindOption(optID).Specify(optArgs);
+}
+
+
+// Parse a block of short options option
+void OptionParser::ParseShortOptionBlock(unsigned optIndex) {
+  string optBlock = this->argv[optIndex];
+  assert(CountLeadingDashes(optBlock) == 1);
+
+  // Extract option arguments
+  vector<string> optArgs;
+  for(unsigned i = optIndex; i < this->argv.size(); i++) {
+    if(i != optIndex) {
+      if(CountLeadingDashes(this->argv[i])) break;
+      else optArgs.push_back(this->argv[i]);
+    }
+  }
+
+  // Specify all of the short options, only the last takes arguments
+  optBlock = StripLeadingDashes(optBlock);
+  for(unsigned i = 0; i < optBlock.size(); i++) {
+    if(i == optBlock.size() - 1) {
+      FindOption(optBlock[i]).Specify(optArgs);
+    } else {
+      FindOption(optBlock[i]).Specify({});
+    }
+  }
+}
+
+
+// Parse all command line options, messy could do with a refactor
+void OptionParser::Parse(void) {
+
+  // Check that first argument has leading dashes
+  if(CountLeadingDashes(this->argv[0]) == 0) {
+    cout << "ERROR, expected option before '" << this->argv[0] << "'.\n";
+    exit(1);
+  }
+
+  // Assign option arguments to options
+  for(unsigned i = 0; i < this->argv.size(); i++) {
+    if(CountLeadingDashes(this->argv[i]) == 2) {
+      this->ParseLongOption(i);
+    } else if(CountLeadingDashes(this->argv[i]) == 1) {
+      this->ParseShortOptionBlock(i);
+    }
+  }
+}
+
+
 // Get option with a given name
 Option OptionParser::Get(string longIdent) {
+
+  // The first call to get finalises the parser and parses arguments
+  if(!this->finalised) {
+    this->Parse();
+    this->finalised = true;
+  }
 
   // Loop variables
   bool optLocated = false;
   unsigned optIndex = 0;
 
   // Iterate over all options looking for one that matches
-  for(unsigned i = 0; i < this->options.size(); i++) {
-    if(this->options[i].OptMatches(longIdent)) {
-      if(!optLocated) {
-        optIndex = i;
-        optLocated = true;
-      } else {
-        printf("Error, option '%s' matches multiple registered options.\n", longIdent.c_str());
-        exit(1);
-      }
-    }
-  }
-
-  // If we found an option, fantastic, otherwise, print an error message
-  if(!optLocated) {
-    printf("Error, option '%s' not registered with option parser.\n", longIdent.c_str());
-    exit(1);
-  } else {
-    return this->options[optIndex];
-  }
+  return this->FindOption(longIdent);
 }
+
 
 // Returns true if the option has been specified
 bool OptionParser::Specified(string longIdent) {
