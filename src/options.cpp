@@ -177,12 +177,6 @@ void Option::Specify(vector<string> args) {
   } else {
     this->args.clear();
     this->specified = true;
-    cout << this->IDStr();
-    for(unsigned i = 0; i < args.size(); i++) {
-      cout << "[" << args[i] << "]";
-      this->args.push_back(Argument(args[i]));
-    }
-    cout << "\n";
   }
 }
 
