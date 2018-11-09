@@ -117,7 +117,6 @@ double Argument::GetDouble(void) {
 
 //========[OPTION SUBCLASS]======================================================================//
 
-
 // Constructor without default arguments
 Option::Option(string longIdent, char shortIdent, ArgType type, string desc) {
   this->Init(longIdent, shortIdent, type, desc);
@@ -314,14 +313,24 @@ Option::operator double() {
 // Returns a string representative of the option
 string Option::IDStr(void) {
   stringstream ss;
-  ss << "[--" << this->longIdent << ", -" << this->shortIdent << "]";
+  ss << "[-" << this->shortIdent << ", --" << this->longIdent << "]";
   return ss.str();
 }
 
 
+// Generate help string
+string Option::HelpStr(void) {
+  stringstream ss;
+  ss << "  " << this->IDStr();
+  unsigned pos = 24;
+  unsigned len = ss.str().size();
+  unsigned shift = pos - len;
+  ss << "\033[" << shift << "C" << this->desc;
+  return ss.str();
+}
+
 
 //========[OPTION PARSER SUBCLASS]===============================================================//
-
 
 // Constructor clear options (and add a help option)
 OptionParser::OptionParser(int argc, char **argv) {
@@ -340,7 +349,7 @@ OptionParser::OptionParser(int argc, char **argv) {
   // Add the help option (presently does nothing)
   this->Add(Option(
     "help", 'h', ARG_TYPE_STRING,
-    "Displays help message.",
+    "Displays help messages for all commands.",
     {"all"}
   ));
 }
@@ -446,6 +455,22 @@ void OptionParser::ParseShortOptionBlock(unsigned optIndex) {
 }
 
 
+// Generate help output
+void OptionParser::DoHelpOutput(void) {
+
+  // Get the specific command for which help was requested
+  Option& helpOption = this->FindOption("help");
+
+  // Print help output for each option
+  for(unsigned i = 0; i < this->options.size(); i++) {
+    cout << options[i].HelpStr() << "\n";
+  }
+
+  // Help command terminates program
+  exit(0);
+}
+
+
 // Parse all command line options, messy could do with a refactor
 void OptionParser::Parse(void) {
 
@@ -462,6 +487,11 @@ void OptionParser::Parse(void) {
     } else if(CountLeadingDashes(this->argv[i]) == 1) {
       this->ParseShortOptionBlock(i);
     }
+  }
+
+  // Check if the help option is defined
+  if(this->FindOption("help").Specified()) {
+    this->DoHelpOutput();
   }
 }
 

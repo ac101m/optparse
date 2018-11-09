@@ -97,6 +97,7 @@ class Option {
 
     // Identifying string
     string IDStr(void);
+    string HelpStr(void);
 };
 
 
@@ -124,6 +125,7 @@ class OptionParser {
     // Parsing routines
     void ParseLongOption(unsigned optIndex);
     void ParseShortOptionBlock(unsigned optIndex);
+    void DoHelpOutput(void);
     void Parse(void);
 
     // Is a given option specified
