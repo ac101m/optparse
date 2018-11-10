@@ -1,5 +1,5 @@
-#ifndef OPTIONS_HPP_INCLUDED
-#define OPTIONS_HPP_INCLUDED
+#ifndef OPTPARSE_HPP_INCLUDED
+#define OPTPARSE_HPP_INCLUDED
 
 
 #include <vector>
@@ -147,4 +147,4 @@ class OptionParser {
 };
 
 
-#endif // OPTIONS_HPP_INCLUDED
+#endif // OPTPARSE_HPP_INCLUDED

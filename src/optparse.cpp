@@ -1,4 +1,4 @@
-#include "options.hpp"
+#include "optparse.hpp"
 #include <assert.h>
 #include <iostream>
 
@@ -320,10 +320,10 @@ string Option::IDStr(void) {
 // Generate argument type string
 string Option::ArgStr(void) {
   switch(this->type) {
-    case ARG_TYPE_INT: return "<integer arguments...>";
-    case ARG_TYPE_BOOL: return "<boolean arguments ('true/false')...>";
-    case ARG_TYPE_FLOAT: return "<decimal arguments...>";
-    case ARG_TYPE_STRING: return "<string arguments...>";
+    case ARG_TYPE_INT: return "<integer args...>";
+    case ARG_TYPE_BOOL: return "<boolean args...>";
+    case ARG_TYPE_FLOAT: return "<decimal args...>";
+    case ARG_TYPE_STRING: return "<string args...>";
     case ARG_TYPE_VOID: return "";
     default:
       cout << "ERROR, option " << this->IDStr() << " invalid typeid.\n";
@@ -495,14 +495,14 @@ void OptionParser::ParseShortOptionBlock(unsigned optIndex) {
 void OptionParser::DoHelpOutput(void) {
 
   // Print out name of program
-  cout << "DESCRIPTION:\n";
+  cout << "PROGRAM DESCRIPTION:\n";
   cout << this->desc << "\n\n";
 
   // Get the specific command for which help was requested
   Option& helpOption = this->FindOption("help");
 
   // Print help output for each option
-  cout << "COMMANDS:\n";
+  cout << "OPTIONS:\n";
   for(unsigned i = 0; i < this->options.size(); i++) {
     cout << options[i].HelpStr() << "\n\n";
   }

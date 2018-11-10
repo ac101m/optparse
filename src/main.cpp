@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-#include "options.hpp"
+#include "optparse.hpp"
 
 
 // Build option parser
