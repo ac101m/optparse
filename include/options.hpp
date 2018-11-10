@@ -97,6 +97,8 @@ class Option {
 
     // Identifying string
     string IDStr(void);
+    string ArgStr(void);
+    string SyntaxStr(void);
     string HelpStr(void);
 };
 

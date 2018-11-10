@@ -9,8 +9,13 @@
 // Build option parser
 OptionParser BuildOptionParser(int argc, char **argv) {
 
+  // Description message
+  stringstream ss;
+  ss << "Simple test program for this option parsing library.\n";
+  ss << "Does some printing and other things.";
+
   // Add test options to the parser
-  OptionParser options(argc, argv, "Simple test program for my crude little option parsing library.\n");
+  OptionParser options(argc, argv, ss.str());
 
   // String test argument, just for setting the print message
   options.Add(Option(

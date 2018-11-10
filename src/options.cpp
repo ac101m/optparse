@@ -114,7 +114,6 @@ double Argument::GetDouble(void) {
 }
 
 
-
 //========[OPTION SUBCLASS]======================================================================//
 
 // Constructor without default arguments
@@ -313,7 +312,31 @@ Option::operator double() {
 // Returns a string representative of the option
 string Option::IDStr(void) {
   stringstream ss;
-  ss << "(-" << this->shortIdent << ", --" << this->longIdent << ")";
+  ss << "[-" << this->shortIdent << ", --" << this->longIdent << "]";
+  return ss.str();
+}
+
+
+// Generate argument type string
+string Option::ArgStr(void) {
+  switch(this->type) {
+    case ARG_TYPE_INT: return "<integer arguments...>";
+    case ARG_TYPE_BOOL: return "<boolean arguments ('true/false')...>";
+    case ARG_TYPE_FLOAT: return "<decimal arguments...>";
+    case ARG_TYPE_STRING: return "<string arguments...>";
+    case ARG_TYPE_VOID: return "";
+    default:
+      cout << "ERROR, option " << this->IDStr() << " invalid typeid.\n";
+      exit(1);
+  }
+}
+
+
+// Generate syntax string
+string Option::SyntaxStr(void) {
+  stringstream ss;
+  ss << "Syntax: " << this->IDStr();
+  ss << " " << this->ArgStr();
   return ss.str();
 }
 
@@ -321,11 +344,9 @@ string Option::IDStr(void) {
 // Generate help string
 string Option::HelpStr(void) {
   stringstream ss;
-  ss << this->IDStr();
-  unsigned pos = 24;
-  unsigned len = ss.str().size();
-  unsigned shift = pos - len;
-  ss << "\033[" << shift << "C" << this->desc;
+  ss << this->longIdent << ":\n";
+  ss << "  " << this->desc << "\n";
+  ss << "  " << this->SyntaxStr();
   return ss.str();
 }
 
@@ -475,7 +496,7 @@ void OptionParser::DoHelpOutput(void) {
 
   // Print out name of program
   cout << "DESCRIPTION:\n";
-  cout << "\t" << this->desc << "\n";
+  cout << this->desc << "\n\n";
 
   // Get the specific command for which help was requested
   Option& helpOption = this->FindOption("help");
@@ -483,7 +504,7 @@ void OptionParser::DoHelpOutput(void) {
   // Print help output for each option
   cout << "COMMANDS:\n";
   for(unsigned i = 0; i < this->options.size(); i++) {
-    cout << "\t" << options[i].HelpStr() << "\n";
+    cout << options[i].HelpStr() << "\n\n";
   }
 
   // Help command terminates program
