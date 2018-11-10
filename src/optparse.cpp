@@ -515,18 +515,17 @@ void OptionParser::DoHelpOutput(void) {
 // Parse all command line options, messy could do with a refactor
 void OptionParser::Parse(void) {
 
-  // Check that first argument has leading dashes
-  if(CountLeadingDashes(this->argv[0]) == 0) {
-    cout << "ERROR, expected option before '" << this->argv[0] << "'.\n";
-    exit(1);
-  }
-
   // Assign option arguments to options
   for(unsigned i = 0; i < this->argv.size(); i++) {
     if(CountLeadingDashes(this->argv[i]) == 2) {
       this->ParseLongOption(i);
     } else if(CountLeadingDashes(this->argv[i]) == 1) {
       this->ParseShortOptionBlock(i);
+    } else {
+      if(i == 0) {
+        cout << "ERROR, expected option before '" << this->argv[0] << "'.\n";
+        exit(1);
+      }
     }
   }
 
