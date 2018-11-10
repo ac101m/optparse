@@ -313,7 +313,7 @@ Option::operator double() {
 // Returns a string representative of the option
 string Option::IDStr(void) {
   stringstream ss;
-  ss << "[-" << this->shortIdent << ", --" << this->longIdent << "]";
+  ss << "(-" << this->shortIdent << ", --" << this->longIdent << ")";
   return ss.str();
 }
 
@@ -321,7 +321,7 @@ string Option::IDStr(void) {
 // Generate help string
 string Option::HelpStr(void) {
   stringstream ss;
-  ss << "  " << this->IDStr();
+  ss << this->IDStr();
   unsigned pos = 24;
   unsigned len = ss.str().size();
   unsigned shift = pos - len;
@@ -333,9 +333,12 @@ string Option::HelpStr(void) {
 //========[OPTION PARSER SUBCLASS]===============================================================//
 
 // Constructor clear options (and add a help option)
-OptionParser::OptionParser(int argc, char **argv) {
+void OptionParser::Init(int argc, char **argv) {
 
-  // Initialise local arguments
+  // Get name from
+  this->name = string(argv[0]);
+
+  // Initialise local arguments and program name
   for(int i = 1; i < argc; i++) {
     this->argv.push_back(string(argv[i]));
   }
@@ -346,12 +349,24 @@ OptionParser::OptionParser(int argc, char **argv) {
   // Clear any present options
   this->options.clear();
 
-  // Add the help option (presently does nothing)
+  // Add the help option
   this->Add(Option(
     "help", 'h', ARG_TYPE_STRING,
-    "Displays help messages for all commands.",
-    {"all"}
+    "Displays help messages for all commands."
   ));
+}
+
+
+// Constructor without program description
+OptionParser::OptionParser(int argc, char **argv) {
+  this->Init(argc, argv);
+}
+
+
+// Constructor without program description
+OptionParser::OptionParser(int argc, char **argv, string desc) {
+  this->Init(argc, argv);
+  this->desc = desc;
 }
 
 
@@ -458,12 +473,17 @@ void OptionParser::ParseShortOptionBlock(unsigned optIndex) {
 // Generate help output
 void OptionParser::DoHelpOutput(void) {
 
+  // Print out name of program
+  cout << "DESCRIPTION:\n";
+  cout << "\t" << this->desc << "\n";
+
   // Get the specific command for which help was requested
   Option& helpOption = this->FindOption("help");
 
   // Print help output for each option
+  cout << "COMMANDS:\n";
   for(unsigned i = 0; i < this->options.size(); i++) {
-    cout << options[i].HelpStr() << "\n";
+    cout << "\t" << options[i].HelpStr() << "\n";
   }
 
   // Help command terminates program

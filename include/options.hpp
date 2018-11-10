@@ -112,6 +112,10 @@ class OptionParser {
     vector<Option> options;
     bool finalised;
 
+    // Program description information
+    string name;
+    string desc;
+
   private:
 
     Option& FindOption(string longIdent);
@@ -119,7 +123,12 @@ class OptionParser {
 
   public:
 
+    // Constructors, and init routine
+    void Init(int argc, char **argv);
     OptionParser(int argc, char **argv);
+    OptionParser(int argc, char **argv, string desc);
+
+    // Add an option to the parser
     void Add(Option opt);
 
     // Parsing routines

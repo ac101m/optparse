@@ -10,7 +10,7 @@
 OptionParser BuildOptionParser(int argc, char **argv) {
 
   // Add test options to the parser
-  OptionParser options(argc, argv);
+  OptionParser options(argc, argv, "Simple test program for my crude little option parsing library.\n");
 
   // String test argument, just for setting the print message
   options.Add(Option(
