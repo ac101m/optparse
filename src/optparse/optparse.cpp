@@ -522,8 +522,10 @@ void OptionParser::Parse(void) {
     } else if(CountLeadingDashes(this->argv[i]) == 1) {
       this->ParseShortOptionBlock(i);
     } else {
+
+      // The first argument must be an option
       if(i == 0) {
-        cout << "ERROR, expected option before '" << this->argv[0] << "'.\n";
+        cout << "ERROR, expected option before '" << this->argv[i] << "'.\n";
         exit(1);
       }
     }
