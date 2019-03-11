@@ -91,12 +91,14 @@ class Option {
     operator std::vector<int>();
     operator std::vector<bool>();
     operator std::vector<double>();
+    operator std::vector<float>();
 
     // Single conversions
     operator std::string();
     operator int();
     operator bool();
     operator double();
+    operator float();
 
     // Identifying std::string
     std::string IDStr(void);

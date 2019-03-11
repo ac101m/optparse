@@ -89,6 +89,50 @@ void Option::AssertArgRequestValid(ArgType requestedType) {
 }
 
 
+// Returns a string representative of the option
+string Option::IDStr(void) {
+  stringstream ss;
+  ss << "[-" << this->shortIdent << ", --" << this->longIdent << "]";
+  return ss.str();
+}
+
+
+// Generate argument type string
+string Option::ArgStr(void) {
+  switch(this->type) {
+    case ARG_TYPE_INT: return "<integer args...>";
+    case ARG_TYPE_BOOL: return "<boolean args...>";
+    case ARG_TYPE_FLOAT: return "<decimal args...>";
+    case ARG_TYPE_STRING: return "<string args...>";
+    case ARG_TYPE_VOID: return "";
+    default:
+      cout << "ERROR, option " << this->IDStr() << " invalid typeid.\n";
+      exit(1);
+  }
+}
+
+
+// Generate syntax string
+string Option::SyntaxStr(void) {
+  stringstream ss;
+  ss << "Syntax: " << this->IDStr();
+  ss << " " << this->ArgStr();
+  return ss.str();
+}
+
+
+// Generate help string
+string Option::HelpStr(void) {
+  stringstream ss;
+  ss << this->longIdent << ":\n";
+  ss << "  " << this->desc << "\n";
+  ss << "  " << this->SyntaxStr();
+  return ss.str();
+}
+
+
+//====[CONVERSION METHODS]===================================================//
+
 // String list
 Option::operator vector<string>() {
   AssertArgRequestValid(ARG_TYPE_STRING);
@@ -196,47 +240,20 @@ Option::operator double() {
   }
 }
 
-
-// Returns a string representative of the option
-string Option::IDStr(void) {
-  stringstream ss;
-  ss << "[-" << this->shortIdent << ", --" << this->longIdent << "]";
-  return ss.str();
-}
-
-
-// Generate argument type string
-string Option::ArgStr(void) {
-  switch(this->type) {
-    case ARG_TYPE_INT: return "<integer args...>";
-    case ARG_TYPE_BOOL: return "<boolean args...>";
-    case ARG_TYPE_FLOAT: return "<decimal args...>";
-    case ARG_TYPE_STRING: return "<string args...>";
-    case ARG_TYPE_VOID: return "";
-    default:
-      cout << "ERROR, option " << this->IDStr() << " invalid typeid.\n";
-      exit(1);
+// Convert to vector of doubles to vector of floats
+Option::operator vector<float>() {
+  vector<double> dvec = *this;
+  vector<float> fvec;
+  fvec.reserve(dvec.size());
+  for(unsigned i = 0; i < dvec.size(); i++) {
+    fvec.push_back(dvec[i]);
   }
+  return fvec;
 }
 
 
-// Generate syntax string
-string Option::SyntaxStr(void) {
-  stringstream ss;
-  ss << "Syntax: " << this->IDStr();
-  ss << " " << this->ArgStr();
-  return ss.str();
+// Convert from double to float
+Option::operator float() {
+  double d = *this;
+  return d;
 }
-
-
-// Generate help string
-string Option::HelpStr(void) {
-  stringstream ss;
-  ss << this->longIdent << ":\n";
-  ss << "  " << this->desc << "\n";
-  ss << "  " << this->SyntaxStr();
-  return ss.str();
-}
-
-
-//========[OPTION PARSER SUBCLASS]===============================================================//

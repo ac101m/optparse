@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
   int count = options.Get("count");
   string message = options.Get("message");
   bool thereIsCake = options.Get("cake");
-  double pi = options.Get("pi");
+  double dpi = options.Get("pi");
+  float fpi = options.Get("pi");
 
   // Print the message n times
   for(int i = 0; i < count; i++) cout << message << "\n";
@@ -70,7 +71,8 @@ int main(int argc, char **argv) {
   if(thereIsCake) cout << "cake\n";
 
   // Print PI from the command line option
-  cout << "Pi is: " << pi << "\n";
+  cout << "Pi (double) is: " << dpi << "\n";
+  cout << "Pi (float) is: " << fpi << "\n";
 
   // El fin
   return 0;
