@@ -34,6 +34,7 @@ $(OBJ_DIR)/%.cpp.o: %.cpp
 LIB_STATIC_OBJS := $(SUB_OBJS)
 lib_static: copy_headers $(LIB_STATIC_OBJS)
 	@$(MKDIR_P) $(dir $(OUTPUT_LIB_STATIC))
+	rm $(OUTPUT_LIB_STATIC)
 	$(AR) rcs $(OUTPUT_LIB_STATIC) $(LIB_STATIC_OBJS)
 
 # Test configuration
